@@ -58,9 +58,10 @@ mqtt_client = init_mqtt_client(
     broker=secrets['mqtt_broker'],
     port=secrets['mqtt_port'])
 
-
+dir_path = os.path.dirname(os.path.realpath(__file__))
+blarg_path = os.path.join(dir_path, "blarg.py")
 while True:
-    apt_check_output = subprocess.check_output("/usr/lib/update-notifier/apt-check", stderr=subprocess.STDOUT).decode('utf-8')
+    apt_check_output = subprocess.check_output(blarg_path, stderr=subprocess.STDOUT).decode('utf-8')
 
     output_lst = apt_check_output.split(";")
     num_updates, num_security = int(output_lst[0]), output_lst[1]
