@@ -10,7 +10,7 @@ import socket
 import time
 import paho.mqtt.client as mqtt
 
-UPDATE_DELAY = 60*10
+UPDATE_DELAY = 60*1
 
 secrets_path = "/etc/homeassistant/secrets.json"
 
@@ -21,6 +21,15 @@ with open(secrets_path) as sfile:
     secrets = json.load(sfile)
 
 def init_mqtt_client(username, password, broker, port):
+    for i in range(5):
+        try:
+            mqtt_client = mqtt.Client(socket.gethostname())
+            mqtt_client.username_pw_set(username, password=password)
+            mqtt_client.connect(broker, port)
+            return mqtt_client
+        except Exception as ex:
+            time.sleep(5)
+            pass
     mqtt_client = mqtt.Client(socket.gethostname())
     mqtt_client.username_pw_set(username, password=password)
     mqtt_client.connect(broker, port)
@@ -40,7 +49,7 @@ def advertise(mqtt_client):
         "unique_id": socket.gethostname() + "update",
         "value_template": "{{ value_json.state }}"
     }
-    mqtt_client.publish(topic, json.dumps(payload))
+    pub(mqtt_client, topic, json.dumps(payload))
     print("Advertised")
 
 def sendvalue(mqtt_client, num_updates: int):
@@ -49,9 +58,14 @@ def sendvalue(mqtt_client, num_updates: int):
         val = "ON"
     payload = {"state": val}
     topic = getTopic("update")
-    mqtt_client.publish(topic, json.dumps(payload))
+    pub(mqtt_client, topic, json.dumps(payload))
     print("Sent value")
 
+def pub(mqtt_client, topic, output):
+    retval = mqtt_client.publish(topic, output)
+    if retval.rc == mqtt.MQTT_ERR_NO_CONN:
+        mqtt_client.reconnect()
+    
 mqtt_client = init_mqtt_client(
     username=secrets['mqtt_username'],
     password=secrets['mqtt_password'],
