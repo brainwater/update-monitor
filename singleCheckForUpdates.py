@@ -53,9 +53,13 @@ def sendvalue(mqtt_client, num_updates: int):
     print("Sent value")
 
 def pub(mqtt_client, topic, output):
-    retval = mqtt_client.publish(topic, output)
+    retval = mqtt_client.publish(topic, output, qos=1)
     if retval.rc == mqtt.MQTT_ERR_NO_CONN:
+        # TODO: Better handle and log errors
+        print("Error, no connection!")
         mqtt_client.reconnect()
+    if retval.rc != mqtt.MQTT_ERR_SUCCESS:
+        print("Unknown error when publishing value!")
     
 mqtt_client = init_mqtt_client(
     username=secrets['mqtt_username'],
@@ -68,6 +72,8 @@ blarg_path = os.path.join(dir_path, "blarg.py")
 apt_check_output = subprocess.check_output(blarg_path, stderr=subprocess.STDOUT).decode('utf-8')
 output_lst = apt_check_output.split(";")
 num_updates, num_security = int(output_lst[0]), output_lst[1]
+#print("Num updates: " + str(num_updates))
+#print("Num security: " + str(num_security))
 
 advertise(mqtt_client)
 sendvalue(mqtt_client, num_updates)
