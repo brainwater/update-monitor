@@ -84,13 +84,13 @@ def isNixOS():
     if not os.path.exists("/etc/lsb-release"):
         return False
     with open("/etc/lsb-release", "rb") as lsbfile:
-        lines = [line for line in lsbfile.readlines() if len(line) < 2 and line.startswith(b"DISTRIB_ID")]
+        lines = [line for line in lsbfile.readlines() if len(line) > 2 and line.startswith(b"DISTRIB_ID")]
         if len(lines) < 1:
             return False
-        items = lines.split(b"=")
+        items = lines[0].split(b"=")
         if len(items) < 2:
             return False
-        if items[1].contains(b'nixos'):
+        if b"nixos" in items[1]:
             return True
     return False
 
