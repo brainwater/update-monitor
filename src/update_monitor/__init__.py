@@ -11,7 +11,6 @@ import time
 import gettext
 from optparse import OptionParser
 import paho.mqtt.client as mqtt
-import debian_update_check
 
 UPDATE_DELAY = 60*30
 
@@ -122,21 +121,21 @@ if __name__ == "__main__":
                       help=_("Return the time in days when security updates "
                              "are installed unattended (0 means disabled)"))
     (options, args) = parser.parse_args()
-    try:
-        debian_update_check.init()
-        num_updates, num_security_updates = debian_update_check.run(options)
-    except Exception:
-        print("Not a debian/ubuntu machine!")
-        if isNixOS():
-            # May need root permission!
-            nix_output = subprocess.check_output(['nixos-rebuild', 'dry-run', '--upgrade'], stderr=subprocess.STDOUT).decode('utf-8')
-            num_updates = len(nix_output.split("\n")) - 3
-            if num_updates < 0:
-                print("Error, got negative number of updates for nixos")
-                num_updates = 0
-        else:
+    if isNixOS():
+        # May need root permission!
+        nix_output = subprocess.check_output(['nixos-rebuild', 'dry-run', '--upgrade'], stderr=subprocess.STDOUT).decode('utf-8')
+        num_updates = len(nix_output.split("\n")) - 3
+        if num_updates < 0:
+            print("Error, got negative number of updates for nixos")
+            num_updates = 0
+    else:
+        try:
+            import debian_update_check
+            debian_update_check.init()
+            num_updates, num_security_updates = debian_update_check.run(options)
+        except OSError:
             num_updates = numWindowsUpdate()
-    #print(num_updates)
+        #print(num_updates)
     #print("Num updates: " + str(num_updates))
     #print("Num security: " + str(num_security))
 
