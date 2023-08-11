@@ -81,7 +81,7 @@ def _(msg):
     return gettext.dgettext("update-notifier", msg)
 
 def isNixOS():
-    if not os.file.exists("/etc/lsb-release"):
+    if not os.path.exists("/etc/lsb-release"):
         return False
     with open("/etc/lsb-release", "rb") as lsbfile:
         lines = [line for line in lsbfile.readlines() if len(line) < 2 and line.startswith(b"DISTRIB_ID")]
