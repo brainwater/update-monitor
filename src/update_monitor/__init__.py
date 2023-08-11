@@ -125,7 +125,7 @@ if __name__ == "__main__":
     try:
         debian_update_check.init()
         num_updates, num_security_updates = debian_update_check.run(options)
-    except OSError:
+    except Exception:
         print("Not a debian/ubuntu machine!")
         if isNixOS():
             # May need root permission!
