@@ -3,6 +3,7 @@
 # Depends on apt package update-notifier-common (for '/usr/lib/update-notifier/apt-check') and apt packeage python3-paho-mqtt
 
 import os
+import platform
 import sys
 import subprocess
 import json
@@ -27,7 +28,8 @@ if secrets is None:
     raise SystemExit("Error! No file found at " + secrets_path + " or " + second_secrets_path + " unable to send!")
 
 def numWindowsUpdate():
-    out = subprocess.check_output(["PowerShell", "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
+    powershell = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+    out = subprocess.check_output([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
     lines = out.split("\r\n".encode("ascii"))
     print(lines)
     numupdates = len(lines) - 6
@@ -94,9 +96,11 @@ def isNixOS():
             return True
     return False
 
-
+def isWindows():
+    return platform.system() == "Windows"
 
 if __name__ == "__main__":
+    time.sleep(5)
     #dir_path = os.path.dirname(os.path.realpath(__file__))
     #blarg_path = os.path.join(dir_path, "blarg.py")
     #try:
@@ -128,13 +132,12 @@ if __name__ == "__main__":
         if num_updates < 0:
             print("Error, got negative number of updates for nixos")
             num_updates = 0
+    elif isWindows():
+        num_updates = numWindowsUpdate()
     else:
-        try:
-            import debian_update_check
-            debian_update_check.init()
-            num_updates, num_security_updates = debian_update_check.run(options)
-        except OSError:
-            num_updates = numWindowsUpdate()
+        import debian_update_check
+        debian_update_check.init()
+        num_updates, num_security_updates = debian_update_check.run(options)
         #print(num_updates)
     #print("Num updates: " + str(num_updates))
     #print("Num security: " + str(num_security))
@@ -147,3 +150,4 @@ if __name__ == "__main__":
 
     advertise(mqtt_client)
     sendvalue(mqtt_client, num_updates)
+    time.sleep(5)

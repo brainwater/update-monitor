@@ -11,7 +11,7 @@ import time
 import paho.mqtt.client as mqtt
 
 UPDATE_DELAY = 60*30
-
+powershell = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
 secrets_path = "/etc/homeassistant/secrets.json"
 directory = os.path.dirname(__file__)
 second_secrets_path = os.path.join(directory, "secrets.json")
@@ -25,7 +25,7 @@ if secrets is None:
     raise SystemExit("Error! No file found at " + secrets_path + " or " + second_secrets_path + " unable to send!")
 
 def numWindowsUpdate():
-    out = subprocess.check_output(["PowerShell", "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
+    out = subprocess.check_output([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
     lines = out.split("\r\n".encode("ascii"))
     print(lines)
     numupdates = len(lines) - 6
