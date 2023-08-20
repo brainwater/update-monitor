@@ -128,7 +128,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     if isNixOS():
         # Needs root permission!
-        runresult = subprocess.run(['nix-channel', '--update', 'nixos'], capture_output=True, env=os.environ, shell=True)
+        runresult = subprocess.run('nix-channel --update nixos', capture_output=True, env=os.environ, shell=True)
         if runresult.returncode != 0:
             print("Error with nix-channel!")
             print(runresult.stdout.decode("utf-8"))
