@@ -30,16 +30,7 @@ if secrets is None:
 
 def numWindowsUpdate():
     powershell = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-    runresult = subprocess.run([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"], capture_output=True)
-    if runresult.returncode != 0:
-        print("Error with stuff")
-        print(runresult.stdout.decode("utf-8"))
-        print("Stderr:")
-        print(runresult.stderr.decode("utf-8"))
-        out = None
-        runresult.check_returncode()
-    else:
-        out = runresult.stdout
+    out = subprocess.check_output([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
     lines = out.split("\r\n".encode("ascii"))
     print(lines)
     numupdates = len(lines) - 6
@@ -137,7 +128,14 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     if isNixOS():
         # May need root permission!
-        nix_output = subprocess.check_output(['nixos-rebuild', 'dry-run', '--upgrade'], stderr=subprocess.STDOUT).decode('utf-8')
+        runresult = subprocess.run(['nixos-rebuild', 'dry-run', '--upgrade'], stderr=subprocess.STDOUT, capture_output=True)
+        nix_output = runresult.stdout.decode('utf-8')
+        if runresult.returncode != 0:
+            print("Error with stuff")
+            print(runresult.stdout.decode("utf-8"))
+            print("Stderr:")
+            print(runresult.stderr.decode("utf-8"))
+            runresult.check_returncode()
         num_updates = len(nix_output.split("\n")) - 3
         if num_updates < 0:
             print("Error, got negative number of updates for nixos")
