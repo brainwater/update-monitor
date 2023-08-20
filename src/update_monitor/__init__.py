@@ -127,8 +127,15 @@ if __name__ == "__main__":
                              "are installed unattended (0 means disabled)"))
     (options, args) = parser.parse_args()
     if isNixOS():
-        # May need root permission!
-        runresult = subprocess.run(['nixos-rebuild', 'dry-build', '--upgrade'], capture_output=True, env=os.environ, shell=True)
+        # Needs root permission!
+        runresult = subprocess.run(['nix-channel', '--update', 'nixos'], capture_output=True, env=os.environ, shell=True)
+        if runresult.returncode != 0:
+            print("Error with nix-channel!")
+            print(runresult.stdout.decode("utf-8"))
+            print("Stderr:")
+            print(runresult.stderr.decode("utf-8"))
+            runresult.check_returncode()
+        runresult = subprocess.run(['nixos-rebuild', 'dry-build'], capture_output=True, env=os.environ, shell=True)
         nix_output = runresult.stdout.decode('utf-8')
         if runresult.returncode != 0:
             print("Error with stuff")
