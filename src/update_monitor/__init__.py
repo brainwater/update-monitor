@@ -30,7 +30,16 @@ if secrets is None:
 
 def numWindowsUpdate():
     powershell = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-    out = subprocess.check_output([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"])
+    runresult = subprocess.run([powershell, "Get-WindowsUpdate", "-AutoSelectOnWebSites"], capture_output=True)
+    if runresult.returncode != 0:
+        print("Error with stuff")
+        print(runresult.stdout.decode("utf-8"))
+        print("Stderr:")
+        print(runresult.stderr.decode("utf-8"))
+        out = None
+        runresult.check_returncode()
+    else:
+        out = runresult.stdout
     lines = out.split("\r\n".encode("ascii"))
     print(lines)
     numupdates = len(lines) - 6
