@@ -128,7 +128,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     if isNixOS():
         # May need root permission!
-        runresult = subprocess.run(['nixos-rebuild', 'dry-run', '--upgrade'], capture_output=True, env=os.environ, shell=True)
+        runresult = subprocess.run(['nixos-rebuild', 'dry-build', '--upgrade'], capture_output=True, env=os.environ, shell=True)
         nix_output = runresult.stdout.decode('utf-8')
         if runresult.returncode != 0:
             print("Error with stuff")
